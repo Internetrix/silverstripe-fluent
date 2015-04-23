@@ -46,14 +46,15 @@ class FluentSiteTree extends FluentExtension {
 		// Check if this locale is the default for its own domain
 		$domain = Fluent::domain_for_locale($locale);
 		if($locale === Fluent::default_locale($domain)) {
+			return;
 			// For home page in the default locale, do not alter home url
-			if($base === null) return;
+// 			if($base === null) return;
 
 			// For all pages on a domain where there is only a single locale,
 			// then the domain itself is sufficient to distinguish that domain
 			// See https://github.com/tractorcow/silverstripe-fluent/issues/75
-			$domainLocales = Fluent::locales($domain);
-			if(count($domainLocales) === 1) return;
+// 			$domainLocales = Fluent::locales($domain);
+// 			if(count($domainLocales) === 1) return;
 		}
 
 		// Simply join locale root with base relative URL

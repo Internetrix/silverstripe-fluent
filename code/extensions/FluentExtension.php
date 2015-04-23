@@ -319,9 +319,9 @@ class FluentExtension extends DataExtension {
 		return Fluent::with_locale($locale, function() use ($id, $class, $locale) {
 			$link = DataObject::get($class)->byID($id)->Link();
 			// Prefix with domain if in cross-domain mode
-			if($domain = Fluent::domain_for_locale($locale)) {
-				$link = Controller::join_links(Director::protocol().$domain, $link);
-			}
+// 			if($domain = Fluent::domain_for_locale($locale)) {
+// 				$link = Controller::join_links(Director::protocol().$domain, $link);
+// 			}
 			return $link;
 		});
 	}

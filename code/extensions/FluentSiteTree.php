@@ -44,8 +44,7 @@ class FluentSiteTree extends FluentExtension {
 		}
 
 		// Check if this locale is the default for its own domain
-		$domain = Fluent::domain_for_locale($locale);
-		if($locale === Fluent::default_locale($domain)) {
+		if($locale === Fluent::default_locale(true)) {
 			return;
 			// For home page in the default locale, do not alter home url
 // 			if($base === null) return;

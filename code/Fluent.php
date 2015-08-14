@@ -124,9 +124,12 @@ class Fluent extends Object implements TemplateGlobalProvider {
 			// Check for a domain specific default locale
 			if($domain && ($domains = self::domains()) && !empty($domains[$domain])) {
 				$info = $domains[$domain];
-				if(!empty($info['default_locale'])) $locale = $info['default_locale'];
-				// With no explicitly set default_locale use the first locale assigned
-				if(!empty($info['locales'])) $locale = reset($info['locales']);
+				if(!empty($info['default_locale'])){ 
+					$locale = $info['default_locale'];
+					// With no explicitly set default_locale use the first locale assigned
+				}else if(!empty($info['locales'])){
+					$locale = reset($info['locales']);
+				}	
 			}
 		}
 

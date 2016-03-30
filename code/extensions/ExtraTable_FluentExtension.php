@@ -1042,7 +1042,8 @@ class ExtraTable_FluentExtension extends DataExtension
 					);
 
 					//Unique indexes will not work on versioned tables, so we'll convert them to standard indexes:
-					$indexes = $this->uniqueToIndex($indexes);
+					if($indexes && count($indexes)) $indexes = $this->uniqueToIndex($indexes);
+					
 					$versionIndexes = array_merge(
 						array(
 							'RecordID_Version' => array('type' => 'unique', 'value' => '"RecordID","Version"'),

@@ -676,6 +676,7 @@ class ExtraTable_FluentExtension extends DataExtension
         }
     }
     
+    
     public function augmentWrite(&$manipulation)
     {
 
@@ -690,6 +691,9 @@ class ExtraTable_FluentExtension extends DataExtension
 
         // Get all tables to translate fields for, and their respective field names
         $includedTables = $this->getTranslatedTables();
+        
+        // Versioned fields
+        $versionFields = array("RecordID", "Version");
         
         // Iterate through each select clause, replacing each with the translated version
         foreach ($manipulation as $class => $updates) {
@@ -729,20 +733,28 @@ class ExtraTable_FluentExtension extends DataExtension
             // Save back modifications to the manipulation
             $manipulation[$class] = $updates;
             
-            /////////////////////////////////////////////////
+            // Save locale data.
             if(count($fluentFields[$localeTable]['fields'])){
             	if(count($fluentFieldNames)){
             		foreach ($fluentFields[$localeTable]['fields'] as $fieldName => $fieldValue){
             			if( ! in_array($fieldName, $fluentFieldNames)){
+            				//skip non-locale fields
             				unset($fluentFields[$localeTable]['fields'][$fieldName]);
             			}
             		}
             	}
             	
             	$manipulation[$localeTable] = $fluentFields[$localeTable];
+            	
+            	//check *_versions table. if this is Versioned table, copy 'Version' and 'RecordID' to locale version table
+            	if(stripos($class, '_versions') !== false && count($versionFields)){
+            		foreach ($versionFields as $versionFieldName){
+            			if(isset($manipulation[$class]['fields'][$versionFieldName]))
+            				$manipulation[$localeTable]['fields'][$versionFieldName] 	= $manipulation[$class]['fields'][$versionFieldName];
+            		}
+            	}
             }
         }
-        
         
         
         $localeVersionedTable = $this->owner->class . '_versions';

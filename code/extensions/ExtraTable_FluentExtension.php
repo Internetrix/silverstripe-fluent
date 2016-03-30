@@ -560,14 +560,22 @@ class ExtraTable_FluentExtension extends DataExtension
     {
     	$fromArray 		= $query->getFrom();
     	
-    	$primaryTable 	= key($fromArray);
-    	
-    	$localeTable 	= $primaryTable . '_' . $locale;
-    	
-		if(DB::get_schema()->hasTable($localeTable) && ! isset($fromArray[$localeTable])){
-			$query->addLeftJoin($localeTable, "\"{$primaryTable}\".\"ID\" = \"$localeTable\".\"ID\"");
-			$query->addGroupBy("\"{$primaryTable}\".\"ID\"");
-		}
+    	if(count($fromArray)){
+    		foreach ($fromArray as $table => $config){
+    			if(is_array($config) && isset($config['table']) && $config['table']){
+    				$primaryTable 	= $config['table'];
+    			}else{
+    				$primaryTable 	= $table;
+    			}
+    			 
+    			$localeTable 	= $primaryTable . '_' . $locale;
+    			 
+    			if(DB::get_schema()->hasTable($localeTable) && ! isset($fromArray[$localeTable])){
+    				$query->addLeftJoin($localeTable, "\"{$primaryTable}\".\"ID\" = \"$localeTable\".\"ID\"");
+    				$query->addGroupBy("\"{$primaryTable}\".\"ID\"");
+    			}
+    		}
+    	}
     }
 
     public function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null)
@@ -579,8 +587,8 @@ class ExtraTable_FluentExtension extends DataExtension
         // Get all tables to translate fields for, and their respective field names
         $includedTables = $this->getTranslatedTables();
         
-        //JZ - Join locale table
-        $this->localiseJoin($query, $locale);
+        // Join locale table
+        $this->localiseJoin($query, $locale, $includedTables);
 
         // Iterate through each select clause, replacing each with the translated version
         foreach ($query->getSelect() as $alias => $select) {

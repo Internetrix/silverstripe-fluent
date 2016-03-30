@@ -556,23 +556,37 @@ class ExtraTable_FluentExtension extends DataExtension
 				ELSE \"{$class}_{$locale}\".\"{$select}\" END";
     }
     
-    protected function localiseJoin(SQLQuery &$query, $locale)
+    protected function localiseJoin(SQLQuery &$query, $locale, $includedTables)
     {
-    	$fromArray 		= $query->getFrom();
+    	$fromArray 	= $query->getFrom();
     	
+    	$isLiveMod	= ( Versioned::current_stage() == 'Live' ) ? true : false;
+
     	if(count($fromArray)){
     		foreach ($fromArray as $table => $config){
+    			// get DB table name
     			if(is_array($config) && isset($config['table']) && $config['table']){
     				$primaryTable 	= $config['table'];
     			}else{
     				$primaryTable 	= $table;
     			}
-    			 
+    			
+    			//check if this table require fluent translation
+    			if( ! isset($includedTables[$primaryTable])){
+    				continue;
+    			}
+    			
     			$localeTable 	= $primaryTable . '_' . $locale;
     			 
     			if(DB::get_schema()->hasTable($localeTable) && ! isset($fromArray[$localeTable])){
     				$query->addLeftJoin($localeTable, "\"{$primaryTable}\".\"ID\" = \"$localeTable\".\"ID\"");
     				$query->addGroupBy("\"{$primaryTable}\".\"ID\"");
+    			}
+    			
+    			//check version mode
+    			$baseLiveTableName = $primaryTable . '_Live';
+    			if($isLiveMod && isset($includedTables[$baseLiveTableName])){
+    				$query->renameTable($localeTable, $baseLiveTableName . '_' . $locale);
     			}
     		}
     	}

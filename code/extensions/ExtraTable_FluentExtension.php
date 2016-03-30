@@ -893,12 +893,12 @@ class ExtraTable_FluentExtension extends DataExtension
     static public function ChangeExtensionOrder($class, $extension = 'ExtraTable_FluentExtension'){
     	$class::remove_extension($extension);
     	
-    	$data = Config::inst()->get('SiteTree', 'extensions');
+    	$data = Config::inst()->get($class, 'extensions');
     	
     	$data[] = $extension;
     	
-    	Config::inst()->remove('SiteTree', 'extensions');
-    	Config::inst()->update('SiteTree', 'extensions', $data);
+    	Config::inst()->remove($class, 'extensions');
+    	Config::inst()->update($class, 'extensions', $data);
     }
     
     public function augmentDatabase(){

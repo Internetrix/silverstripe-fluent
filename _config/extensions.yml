@@ -9,7 +9,7 @@ SiteTree:
   translate: []
 SiteConfig:
   extensions:
-    - FluentExtension
+    - ExtraTable_FluentExtension
 Controller:
   extensions:
     - FluentOldPageRedirectFix

@@ -1,29 +1,31 @@
 {
-	"name": "tractorcow/silverstripe-fluent",
-	"description": "Simple localisation for Silverstripe",
-	"type": "silverstripe-module",
-	"keywords": ["silverstripe", "localisation", "localization", "translation", "language", "locale", "multilingual"],
-	"license": "BSD-3-Clause",
-	"authors": [
-		{
-			"name": "Damian Mooyman",
-			"email": "damian.mooyman@gmail.com"
+	"name" : "Internetrix/silverstripe-fluent",
+	"description" : "A fork of tractorcow/silverstripe-fluent. Module creates extra tables for locale data instead of having them in a same table because of MySQL row size limitation.",
+	"type" : "silverstripe-module",
+	"keywords" : [
+		"silverstripe",
+		"localisation",
+		"localization",
+		"translation",
+		"language",
+		"locale",
+		"multilingual"
+	],
+	"license" : "BSD-3-Clause",
+	"authors" : [{
+			"name" : "Jason Zhang",
+			"email" : "jason.zhang@internetrix.com.au"
 		}
 	],
-	"support": {
-		"issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
+	"support" : {
+		"issues" : "https://github.com/Internetrix/silverstripe-fluent/issues"
 	},
-	"require": {
-		"silverstripe/framework": "3.*",
-		"silverstripe/cms": "3.*",
-		"composer/installers": "*"
+	"require" : {
+		"silverstripe/framework" : "3.*",
+		"silverstripe/cms" : "3.*",
+		"composer/installers" : "*"
 	},
-	"extra": {
-		"branch-alias": {
-			"dev-master": "3.3.x-dev"
-		}
-	},
-	"extra": {
-		"installer-name": "fluent"
+	"extra" : {
+		"installer-name" : "fluent"
 	}
 }

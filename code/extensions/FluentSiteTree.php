@@ -7,8 +7,13 @@
  * @package fluent
  * @author Damian Mooyman <damian.mooyman@gmail.com>
  */
-class FluentSiteTree extends FluentExtension
+class FluentSiteTree extends ExtraTable_FluentExtension
 {
+	/**
+	 * @var SiteTree
+	 */
+	protected $owner;
+	
     public function MetaTags(&$tags)
     {
         $tags .= $this->owner->renderWith('FluentSiteTree_MetaTags');

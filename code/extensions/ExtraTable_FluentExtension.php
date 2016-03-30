@@ -858,6 +858,49 @@ class ExtraTable_FluentExtension extends DataExtension
     
     //new functions----------------------------------------------
     
+    static public function ConfigVersionedDataObject(){
+		// 1. SiteTree
+		self::ChangeExtensionOrder('SiteTree', 'FluentSiteTree');
+    	
+    	// 2. User defined DataObject has Versioned extension.
+    	$list = Config::inst()->get('Fluent', 'VersionedFluentDataObjects');
+    	if(is_array($list) && count($list)){
+    		foreach ($list as $dataObjectName){
+    			if($dataObjectName::has_extension('ExtraTable_FluentExtension') && $dataObjectName::has_extension('Versioned')){
+    				self::ChangeExtensionOrder($dataObjectName);
+    			}
+    		}
+    	}
+    }
+    
+    /**
+     * have to move fluent related extension to bottom of ext list to make it work for Versioned extension.
+     *
+     * @TODO find a better way to define extensions order....
+     *
+     * e.g. SiteTree extension order need to be like that. 'Versioned' should be above 'FluentSiteTree' or 'ExtraTable_FluentExtension'
+     *
+	     1 => string 'Hierarchy'
+	     2 => string 'Versioned('Stage', 'Live')'
+	     3 => string 'SiteTreeLinkTracking'
+	     4 => string 'ExtraTable_FluentSiteTree'
+	     	
+	     replicate the following setting in your mysite/_config.php if you add ExtraTable_FluentExtension for Versioned DataObject like SiteTree.
+	    
+	     Don't worry about sub classes of SiteTree or Versioned DataObject.
+     *
+     */
+    static public function ChangeExtensionOrder($class, $extension = 'ExtraTable_FluentExtension'){
+    	$class::remove_extension($extension);
+    	
+    	$data = Config::inst()->get('SiteTree', 'extensions');
+    	
+    	$data[] = $extension;
+    	
+    	Config::inst()->remove('SiteTree', 'extensions');
+    	Config::inst()->update('SiteTree', 'extensions', $data);
+    }
+    
     public function augmentDatabase(){
     	$includedTables = $this->getTranslatedTables();
 

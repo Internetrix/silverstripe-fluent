@@ -782,16 +782,30 @@ class ExtraTable_FluentExtension extends DataExtension
 		
 		$class = $this->owner->class;
 		
-		foreach (Fluent::locales() as $locale) {
-			//delete records from all locale tables.
-			$localeTable = $class . '_' . $locale;
+		if($this->owner->hasExtension('Versioned')){
+			//has Versioned ext. check mode and current locale.
+			$mode 	= (Versioned::current_stage() == 'Live') ? '_Live' : '';
+			
+			$locale = Fluent::current_locale();
+			
+			$localeSuffix = $locale ? '_' . $locale : '';
 			
 			DB::prepared_query(
-				"DELETE FROM \"{$localeTable}\" WHERE \"ID\" = ?",
+				"DELETE FROM \"{$class}{$mode}{$localeSuffix}\" WHERE \"ID\" = ?",
 				array($this->owner->ID)
 			);
+		}else{
+			// no Versioned ext. delete all records from all locale tables
+			foreach (Fluent::locales() as $locale) {
+				//delete records from all locale tables.
+				$localeTable = $class . '_' . $locale;
+			
+				DB::prepared_query(
+				"DELETE FROM \"{$localeTable}\" WHERE \"ID\" = ?",
+				array($this->owner->ID)
+				);
+			}
 		}
-		
 	}
 
 

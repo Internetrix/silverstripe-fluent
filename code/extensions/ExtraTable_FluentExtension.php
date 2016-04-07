@@ -725,6 +725,11 @@ class ExtraTable_FluentExtension extends DataExtension
             }
 
             foreach ($includedTables[$class] as $field) {
+                
+                //put all fluent field names of $class into array $fluentFieldNames
+                $updateField = Fluent::db_field_for_locale($field, $locale);
+                $fluentFieldNames[] = $updateField;
+                
                 // Skip translated field if not updated in this request
                 if (!isset($updates['fields'][$field])) {
                     continue;
@@ -732,9 +737,9 @@ class ExtraTable_FluentExtension extends DataExtension
 
                 // Copy the updated value to the locale specific field
                 // (Title => Title_fr_FR)
-                $updateField = Fluent::db_field_for_locale($field, $locale);
+                
                 $fluentFields[$localeTable]['fields'][$updateField] = $updates['fields'][$field];
-                $fluentFieldNames[] = $updateField;
+                
 
                 // If not on the default locale, write the stored default field back to the main field
                 // (if Title_en_NZ then Title_en_NZ => Title)

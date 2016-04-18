@@ -787,6 +787,12 @@ class ExtraTable_FluentExtension extends DataExtension
 		
 		$class = $this->owner->class;
 		
+		$includedTables = $this->getTranslatedTables();
+		
+		if(empty($includedTables[$class])){
+			return;
+		}
+		
 		if($this->owner->hasExtension('Versioned')){
 			//has Versioned ext. check mode and current locale.
 			$mode 	= (Versioned::current_stage() == 'Live') ? '_Live' : '';

@@ -731,8 +731,10 @@ class ExtraTable_FluentExtension extends DataExtension
                 $fluentFieldNames[] = $updateField;
                 
                 // Skip translated field if not updated in this request
-                if (!isset($updates['fields'][$field])) {
-                    continue;
+            	if (!isset($updates['fields'][$field])) {
+                	if(!in_array($field, Config::inst()->get('Fluent', 'nullable_fields'))){
+                		continue;
+                	}
                 }
 
                 // Copy the updated value to the locale specific field

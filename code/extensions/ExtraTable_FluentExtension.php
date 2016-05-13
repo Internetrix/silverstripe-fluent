@@ -56,10 +56,12 @@ class ExtraTable_FluentExtension extends DataExtension
         return self::$translated_fields_for_cache[$class] = self::without_fluent_fields(function () use ($class) {
             $db = DataObject::custom_database_fields($class);
             $filter = Config::inst()->get($class, 'translate', Config::UNINHERITED);
-            if ($filter === 'none') {
-                return array();
+            $filterIn = Config::inst()->get($class, 'translate_append', Config::UNINHERITED);
+            if( $filter === 'none' ){ 
+                if( $filterIn === 'none' ) {
+                    return array();
+                }
             }
-
             // Data and field filters
             $fieldsInclude = Fluent::config()->field_include;
             $fieldsExclude = Fluent::config()->field_exclude;
@@ -71,19 +73,20 @@ class ExtraTable_FluentExtension extends DataExtension
                 foreach ($db as $field => $type) {
                     if (!empty($filter)) {
                         // If given an explicit field name filter, then remove non-presented fields
-                    if (!in_array($field, $filter)) {
-                        unset($db[$field]);
-                    }
+                        if ( !in_array($field, $filter) ) {
+                            unset($db[$field]);
+                        }
+                    } elseif( !empty($filterIn) && in_array($field, $filterIn )) {
+                        // keep this puppy
                     } else {
-
-                    // Without a name filter then check against each filter type
-                    if (($fieldsInclude && !Fluent::any_match($field, $fieldsInclude))
-                        || ($fieldsExclude && Fluent::any_match($field, $fieldsExclude))
-                        || ($dataInclude && !Fluent::any_match($type, $dataInclude))
-                        || ($dataExclude && Fluent::any_match($type, $dataExclude))
-                    ) {
-                        unset($db[$field]);
-                    }
+                        // Without a name filter then check against each filter type
+                        if (($fieldsInclude && !Fluent::any_match($field, $fieldsInclude))
+                            || ($fieldsExclude && Fluent::any_match($field, $fieldsExclude))
+                            || ($dataInclude && !Fluent::any_match($type, $dataInclude))
+                            || ($dataExclude && Fluent::any_match($type, $dataExclude))
+                        ) {
+                            unset($db[$field]);
+                        }
                     }
                 }
             }

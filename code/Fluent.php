@@ -28,18 +28,43 @@ class Fluent extends Object implements TemplateGlobalProvider
             );
         }
 
-        // Default route
-        $routes[''] = 'FluentRootURLController';
-
         // If Google sitemap module is installed then replace default controller with custom controller
         if (class_exists('GoogleSitemapController')) {
             $routes['sitemap.xml'] = 'FluentSitemapController';
+        }
+
+        // Merge all other routes (maintain priority)
+        foreach (Config::inst()->get('Director', 'rules') as $key => $route) {
+            if (!isset($routes[$key])) {
+                $routes[$key] = $route;
+            }
+        }
+
+        // Home page route
+        $routes[''] = array(
+            'Controller' => 'FluentRootURLController',
+        );
+
+        // If we do not wish to detect the locale automatically, fix the home page route
+        // to the default locale for this domain.
+        if (!Fluent::config()->detect_locale) {
+            $routes[''][self::config()->query_param] = static::default_locale(true);
+        }
+
+        // If default locale doesn't have prefix, replace default route with
+        // the default locale for this domain
+        if (static::disable_default_prefix()) {
+            $routes['$URLSegment//$Action/$ID/$OtherID'] = array(
+                'Controller' => 'ModelAsController',
+                self::config()->query_param => static::default_locale(true)
+            );
         }
 
         $singleton = singleton(__CLASS__);
         $singleton->extend('updateRegenerateRoutes', $routes);
 
         // Load into core routes
+        Config::inst()->remove('Director', 'rules');
         Config::inst()->update('Director', 'rules', $routes);
 
         $singleton->extend('onAfterRegenerateRoutes');
@@ -50,7 +75,6 @@ class Fluent extends Object implements TemplateGlobalProvider
      */
     public static function init()
     {
-
         // Attempt to do pre-emptive i18n bootstrapping, in case session locale is available and
         // only non-sitetree actions will be executed this request (e.g. MemberForm::forgotPassword)
         self::install_locale(false);
@@ -421,6 +445,16 @@ class Fluent extends Object implements TemplateGlobalProvider
     }
 
     /**
+     * Check if default locale should have prefix disabled
+     *
+     * @return bool
+     */
+    public static function disable_default_prefix()
+    {
+        return self::config()->disable_default_prefix;
+    }
+
+    /**
      * Helper function to check if the value given is present in any of the patterns.
      * This function is case sensitive by default.
      *
@@ -645,7 +679,7 @@ class Fluent extends Object implements TemplateGlobalProvider
         }
 
         // Don't append locale to home page for default locale
-        if ($locale === self::default_locale()) {
+        if ($locale === self::default_locale($domain)) {
             return $base;
         }
 
@@ -668,5 +702,41 @@ class Fluent extends Object implements TemplateGlobalProvider
                 'casting' => 'Text'
             )
         );
+    }
+
+    /**
+     * Given a field on an object and optionally a locale, compare its locale value against the default locale value to
+     * determine if the value is changed at the given locale.
+     *
+     * @param  DataObject  $object
+     * @param  FormField   $field
+     * @param  string|null $locale Optional: if not provided, will be gathered from the request
+     * @return boolean
+     */
+    public static function isFieldModified(DataObject $object, FormField $field, $locale = null)
+    {
+        if (is_null($locale)) {
+            $locale = self::current_locale();
+        }
+
+        if ($locale === $defaultLocale = self::default_locale()) {
+            // It's the default locale, so it's never "modified" from the default locale value
+            return false;
+        }
+
+        $defaultField = self::db_field_for_locale($field->getName(), $defaultLocale);
+        $localeField  = self::db_field_for_locale($field->getName(), $locale);
+
+        $defaultValue = $object->$defaultField;
+        $localeValue  = $object->$localeField;
+
+        if ((!empty($defaultValue) && empty($localeValue))
+            || ($defaultValue === $localeValue)
+        ) {
+            // Unchanged from default
+            return false;
+        }
+
+        return true;
     }
 }

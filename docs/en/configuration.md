@@ -13,9 +13,9 @@ will interfere with locale bootstrapping in certain situations (such as `Securit
 
 Once you've finished configuring your site, you can run the handy validation task to check if
 there are any errors in your config. Examples of errors could include:
- - Invalid default locales
- - Duplicate locales in multiple domains
- - Locales missing from domains
+ * Invalid default locales
+ * Duplicate locales in multiple domains
+ * Locales missing from domains
 
 To run this task you can run this on the CLI.
 
@@ -30,11 +30,11 @@ Or go to `http://www.mysite.com/dev/tasks/FluentValidateTask?isDev=1` in your br
 Firstly, you'll need to configure the locales that should be included, as well as
 the default locale.
 
-By default the list is blank. You should add the following to your mysite/_config/fluent.yaml
+By default the list is blank. You should add the following to your `mysite/_config/fluent.yaml`.
 
-It's advisable to set the default i18n locale to match your site locale
+It's advisable to set the default i18n locale to match your site locale.
 
-Below demonstrates a typical north american website.
+Below demonstrates a typical north American website.
 
 ```yaml
 ---
@@ -46,7 +46,7 @@ Fluent:
   locales:
     - en_US
     - es_US
-	- en_CA
+    - en_CA
     - fr_CA
 ---
 Name: myfluenti18nconfig
@@ -57,7 +57,7 @@ i18n:
 ```
 
 Additionally, if you prefer to customise the urls (such as having 'english' instead of 'en_US' as a prefix) you can use
-the Fluent.aliases configuration to specify url aliases for any locale.
+the `Fluent.aliases` configuration to specify URL aliases for any locale.
 
 E.g.
 
@@ -71,7 +71,7 @@ Fluent:
   locales:
     - en_US
     - es_US
-	- en_CA
+    - en_CA
     - fr_CA
   aliases:
     en_US: english
@@ -80,10 +80,35 @@ Fluent:
 
 The home pages for the above locales will be `/english/`, `/spanish/`, `/en_CA/`, and `/fr_CA/`
 
+## Default locale options
+
+If you prefer to keep the prefix off from all links in the default locale, you can set the
+`Fluent.disable_default_prefix` option. When this is enabled, the prefix will only be
+prepended to the beginning of links to non-default locales.
+
+
+E.g.
+
+```yaml
+---
+Name: myfluentconfig
+After: '#fluentconfig'
+---
+Fluent:
+  disable_default_prefix: true
+```
+
+If this is left at the default, false, then the prefix will only be omitted for the
+home page for the default locale.
+
+It is recommended to leave this on in order to ensure the correct locale is set for every page,
+but in some cases (especially when upgrading websites) it may be better to keep existing urls
+for the default locale intact.
+
 ## Field localisation configuration
 
-Great, now we've setup our languages. Our next job is to decide which dataobjects, and which
-fields of those dataobjects, should be localised.
+Great, now we've setup our languages. Our next job is to decide which DataObjects, and which
+fields of those DataObjects, should be localised.
 
 By default Fluent will attempt to analyse the field type and name of each `DBField` specified in your `DataObject`.
 Rules specified by `Fluent.field_include`, `Fluent.field_exclude`, `Fluent.data_include`, and `Fluent.data_exclude`
@@ -91,7 +116,7 @@ can be customised to tweak this automatic detection behaviour. This filter is us
 type. `data_` filters filter fields by `DBField` type, where `field_` filters are by name. Regular expressions may
 be specified by surrounding your filter with `/filter/`.
 
-Fields can also be filtered directly by name by using the 'translate' config option, set to the fields you want
+Fields can also be filtered directly by name by using the `translate` config option, set to the fields you want
 localised. Note that this must be on the same class as the database field is specified (not subclasses).
 
 ```yaml
@@ -107,18 +132,18 @@ Page:
 or via PHP
 
 ```php
-class Page extends SiteTree {
+class Page extends SiteTree
+{
+    private static $db = array(
+        'Heading'     => 'Varchar(255)',
+        'Description' => 'Text',
+        'MetaNotes'   => 'Text'
+    );
 
-	private static $db = array(
-		'Heading' => 'Varchar(255)',
-		'Description' => 'Text',
-		'MetaNotes' => 'Text'
-	);
-
-	private static $translate = array(
-		'Heading',
-		'Description'
-	);
+    private static $translate = array(
+        'Heading',
+        'Description'
+    );
 }
 ```
 
@@ -136,8 +161,8 @@ BlogHolder:
 Note: If you wish to translate `has_many` or `many_many` then those objects will need
 to be filtered via another method. See [Locale based filter configuration](#locale-based-filter-configuration)
 
-If you want to localise a dataobject that doesn't extend sitetree then you'll need
-to add the appropriate extension
+If you want to localise a `DataObject` that doesn't extend `SiteTree` then you'll need
+to add the appropriate extension:
 
 ```yaml
 ---
@@ -148,17 +173,18 @@ MyDataObject:
     - 'FluentExtension'
 ```
 
-Set the translate option to 'none' to disable all translation on that dataobject.
+Set the translate option to 'none' to disable all translation on that `DataObject`.
 
 ```php
-class FormPage extends Page {
-	private static $translate = 'none';
+class FormPage extends Page
+{
+    private static $translate = 'none';
 }
 ```
 
 ## Using custom controllers
 
-If you are using custom controllers (such as for rendering rss, ajax data, etc) you
+If you are using custom controllers (such as for rendering RSS, AJAX data, etc) you
 should probably also add the `FluentContentController` extension in order to ensure
 the locale is set correctly for generated content.
 
@@ -186,6 +212,37 @@ class MyAdminController extends Controller {
 	}
 }
 ```
+
+## Nullable fields
+
+Due to the way that localisation works, any empty field will fall back to the value of that field in
+the default locale. By default fields cannot be easily forced to an empty value.
+
+However you may specify a `nullable_fields` config on any object to disable default value fallback
+for any (or all) field(s), meaning that empty fields will stay empty.
+
+
+```php
+class Page extends SiteTree {
+    private static $db = array(
+        'IntroText' => 'Varchar'
+    );
+
+    private static $nullable_fields = array(
+        'IntroText'
+    );
+}
+```
+
+You can also set this to the string `*` to apply this behaviour to all fields on that record.
+
+
+```php
+class MyObject extends DataObject {
+    private static $nullable_fields = '*';
+}
+```
+
 
 ## Locale based filter configuration
 
@@ -277,10 +334,10 @@ Search localisation is quite fragile, and is likely to break with future framewo
 
 ## Locale detection
 
-When a visitor lands on the home page for the first time, fluent can attempt to detect that user's locale based
+When a visitor lands on the home page for the first time, Fluent can attempt to detect that user's locale based
 on the `Accept-Language` http headers sent.
 
-This functionality can interefere with certain applications, such as facebook opengraph tools, so it
+This functionality can interfere with certain applications, such as Facebook opengraph tools, so it
 is turned off by default. To turn it on set the below setting:
 
 ```yaml
@@ -290,7 +347,7 @@ Fluent:
 
 ## Saved locale
 
-When a visitor has viewed a page on the website before, and returns in subsequent sessions, fluent can attempt
+When a visitor has viewed a page on the website before, and returns in subsequent sessions, Fluent can attempt
 to redirect requests for the default home page to the home page of that recently viewed locale. This behaviour
 is turned off by default, but it can be turned on by setting the `remember_locale` option.
 
@@ -307,5 +364,5 @@ Fluent:
   persist_id: ''
 ```
 
-Note: It's recommended not to remove persist_id_cms, as certain CMS functionality may not work properly
+**Note:** It's recommended not to remove `persist_id_cms`, as certain CMS functionality may not work properly
 or may detect the wrong locale.

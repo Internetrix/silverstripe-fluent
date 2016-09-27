@@ -13,7 +13,8 @@ class FluentTest extends SapphireTest
 
     protected $extraDataObjects = array(
         'FluentTest_TranslatedObject',
-        'FluentTest_FilteredObject'
+        'FluentTest_FilteredObject',
+        'FluentTest_NullableObject',
     );
 
     protected $illegalExtensions = array(
@@ -23,15 +24,11 @@ class FluentTest extends SapphireTest
         )
     );
 
-    protected $_original_config_locales = null;
-    protected $_original_config_default = null;
-    protected $_original_config_aliases = null;
-
     protected function setDefaultConfig()
     {
-
         // Tweak configuration
         Config::inst()->remove('Fluent', 'locales');
+        Config::inst()->remove('Fluent', 'disable_default_prefix');
         Config::inst()->update('Fluent', 'locales', array('fr_CA', 'en_NZ', 'en_US', 'es_ES'));
         Config::inst()->remove('Fluent', 'default_locale');
         Config::inst()->update('Fluent', 'default_locale', 'fr_CA');
@@ -134,6 +131,62 @@ class FluentTest extends SapphireTest
         $this->assertEquals('/', $homeDomainLink);
         $this->assertEquals('/about-us/', $aboutDomainLink);
         $this->assertEquals('/about-us/my-staff/', $staffDomainLink);
+    }
+
+
+
+    /**
+     * Test that urls are generated with disable_default_prefix enabled
+     */
+    public function testFluentURLsWithNonPrefixedDefault()
+    {
+        Config::inst()->update('Fluent', 'disable_default_prefix', true);
+
+        $home = $this->objFromFixture('Page', 'home');
+        $about = $this->objFromFixture('Page', 'about');
+        $staff = $this->objFromFixture('Page', 'staff');
+
+        // When not in domain mode expect the locale to prefix the relative link
+        $this->assertEquals('/', $home->Link());
+        $this->assertEquals('/about-us/', $about->Link());
+        $this->assertEquals('/about-us/my-staff/', $staff->Link());
+
+        // When acting in domain mode behave a little differently.
+        // Since fr_CA is the only locale on the www.example.ca domain, ensure that the locale
+        // isn't unnecessarily added to the link.
+        // See https://github.com/tractorcow/silverstripe-fluent/issues/75
+        $homeDomainLink = $this->withURL('www.example.ca', '/', '/', function () use ($home) {
+            return Page::get()->byID($home->ID)->Link();
+        });
+        $aboutDomainLink = $this->withURL('www.example.ca', '/', '/', function () use ($about) {
+            return Page::get()->byID($about->ID)->Link();
+        });
+        $staffDomainLink = $this->withURL('www.example.ca', '/', '/', function () use ($staff) {
+            return Page::get()->byID($staff->ID)->Link();
+        });
+        $this->assertEquals('/', $homeDomainLink);
+        $this->assertEquals('/about-us/', $aboutDomainLink);
+        $this->assertEquals('/about-us/my-staff/', $staffDomainLink);
+
+        // Non-default locale still has prefix
+        $homeDomainLink = $this->withURL('www.example.com', '/', '/', function () use ($home) {
+            return Fluent::with_locale('es_ES', function () use ($home) {
+                return Page::get()->byID($home->ID)->Link();
+            });
+        });
+        $aboutDomainLink = $this->withURL('www.example.ca', '/', '/', function () use ($about) {
+            return Fluent::with_locale('es_ES', function () use ($about) {
+                return Page::get()->byID($about->ID)->Link();
+            });
+        });
+        $staffDomainLink = $this->withURL('www.example.ca', '/', '/', function () use ($staff) {
+            return Fluent::with_locale('es_ES', function () use ($staff) {
+                return Page::get()->byID($staff->ID)->Link();
+            });
+        });
+        $this->assertEquals('/es_ES/', $homeDomainLink);
+        $this->assertEquals('/es_ES/about-us/', $aboutDomainLink);
+        $this->assertEquals('/es_ES/about-us/my-staff/', $staffDomainLink);
     }
 
     /**
@@ -246,8 +299,9 @@ class FluentTest extends SapphireTest
                 'Locale' => 'fr_CA',
                 'LocaleRFC1766' => 'fr-CA',
                 'Alias' => 'fr_CA',
-                'Title' => 'French (Canada)',
+                'Title' => i18n::get_locale_name('fr_CA'),
                 'LanguageNative' => 'fran&ccedil;ais',
+                'Language' => 'fr',
                 'Link' => '/', // fr_CA home page
                 'AbsoluteLink' => 'http://www.notexample.com/',
                 'LinkingMode' => 'invalid'
@@ -256,8 +310,9 @@ class FluentTest extends SapphireTest
                 'Locale' => 'en_NZ',
                 'LocaleRFC1766' => 'en-NZ',
                 'Alias' => 'en_NZ',
-                'Title' => 'English (New Zealand)',
+                'Title' => i18n::get_locale_name('en_NZ'),
                 'LanguageNative' => 'English',
+                'Language' => 'en',
                 'Link' => '/en_NZ/link/',
                 'AbsoluteLink' => 'http://www.notexample.com/en_NZ/link/',
                 'LinkingMode' => 'current'
@@ -266,8 +321,9 @@ class FluentTest extends SapphireTest
                 'Locale' => 'en_US',
                 'LocaleRFC1766' => 'en-US',
                 'Alias' => 'usa',
-                'Title' => 'English (United States)',
+                'Title' => i18n::get_locale_name('en_US'),
                 'LanguageNative' => 'English',
+                'Language' => 'en',
                 'Link' => '/en_US/link/',
                 'AbsoluteLink' => 'http://www.notexample.com/en_US/link/',
                 'LinkingMode' => 'link'
@@ -276,13 +332,15 @@ class FluentTest extends SapphireTest
                 'Locale' => 'es_ES',
                 'LocaleRFC1766' => 'es-ES',
                 'Alias' => 'es_ES',
-                'Title' => 'Spanish (Spain)',
+                'Title' =>  i18n::get_locale_name('es_ES'),
                 'LanguageNative' => 'espa&ntilde;ol',
+                'Language' => 'es',
                 'Link' => '/es_ES/', // es_ES home page
                 'AbsoluteLink' => 'http://www.notexample.com/es_ES/',
                 'LinkingMode' => 'invalid'
             )
         );
+
         $this->assertEquals($expected, $data);
 
         // Put default locale back
@@ -307,8 +365,9 @@ class FluentTest extends SapphireTest
                 'Locale' => 'fr_CA',
                 'LocaleRFC1766' => 'fr-CA',
                 'Alias' => 'fr_CA',
-                'Title' => 'French (Canada)',
+                'Title' => i18n::get_locale_name('fr_CA'),
                 'LanguageNative' => 'fran&ccedil;ais',
+                'Language' => 'fr',
                 'Link' => 'http://www.example.ca/', // fr_CA home page
                 'AbsoluteLink' => 'http://www.example.ca/',
                 'LinkingMode' => 'invalid'
@@ -317,8 +376,9 @@ class FluentTest extends SapphireTest
                 'Locale' => 'en_NZ',
                 'LocaleRFC1766' => 'en-NZ',
                 'Alias' => 'en_NZ',
-                'Title' => 'English (New Zealand)',
+                'Title' => i18n::get_locale_name('en_NZ'),
                 'LanguageNative' => 'English',
+                'Language' => 'en',
                 'Link' => 'http://www.example.co.nz/en_NZ/link/', // NZ domain
                 'AbsoluteLink' => 'http://www.example.co.nz/en_NZ/link/',
                 'LinkingMode' => 'current'
@@ -327,8 +387,9 @@ class FluentTest extends SapphireTest
                 'Locale' => 'en_US',
                 'LocaleRFC1766' => 'en-US',
                 'Alias' => 'usa',
-                'Title' => 'English (United States)',
+                'Title' => i18n::get_locale_name('en_US'),
                 'LanguageNative' => 'English',
+                'Language' => 'en',
                 'Link' => 'http://www.example.com/en_US/link/', // US domain with en_US locale
                 'AbsoluteLink' => 'http://www.example.com/en_US/link/',
                 'LinkingMode' => 'link'
@@ -337,8 +398,9 @@ class FluentTest extends SapphireTest
                 'Locale' => 'es_ES',
                 'LocaleRFC1766' => 'es-ES',
                 'Alias' => 'es_ES',
-                'Title' => 'Spanish (Spain)',
+                'Title' => i18n::get_locale_name('es_ES'),
                 'LanguageNative' => 'espa&ntilde;ol',
+                'Language' => 'es',
                 'Link' => 'http://www.example.com/es_ES/', // US domain with es_ES home page
                 'AbsoluteLink' => 'http://www.example.com/es_ES/',
                 'LinkingMode' => 'invalid'
@@ -507,6 +569,65 @@ class FluentTest extends SapphireTest
             ->filter('Title', 'this is an object')
             ->column('URLKey');
         $this->assertEquals(array(), $urls);
+
+        // Put default locale back
+        Fluent::set_persist_locale('fr_CA');
+    }
+
+    public function testNullableSelect() {
+        $frRecord = null;
+        Fluent::with_locale('fr_CA', function() use (&$frRecord) {
+            $frRecord = new FluentTest_NullableObject();
+            $frRecord->Localised = 'French value';
+            $frRecord->LocalisedNullable = 'French default value';
+            $frRecord->Unlocalised = 'Global value';
+            $frRecord->write();
+        });
+
+        $test = $this;
+        Fluent::with_locale('en_NZ', function() use ($frRecord, $test) {
+            $nzRecord = FluentTest_NullableObject::get()->byID($frRecord->ID);
+            $test->assertEquals('French value', $nzRecord->Localised);
+            $test->assertEmpty($nzRecord->LocalisedNullable);
+            $test->assertEquals('Global value', $nzRecord->Unlocalised);
+
+            // Write back in this locale, and make sure it doesn't affect the default
+            $nzRecord->Localised = 'NZ Value';
+            $nzRecord->LocalisedNullable = 'NZ nullable value';
+            $nzRecord->Unlocalised = 'New global value';
+            $nzRecord->write();
+        });
+
+        // Reload from db and check
+        Fluent::with_locale('fr_CA', function() use (&$frRecord, $test) {
+            $frRecord = FluentTest_NullableObject::get()->byID($frRecord->ID);
+            $test->assertEquals('French value', $frRecord->Localised);
+            $test->assertEquals('French default value', $frRecord->LocalisedNullable);
+            $test->assertEquals('New global value', $frRecord->Unlocalised);
+
+            // Should be a no-op
+            $frRecord->forceChange();
+            $frRecord->write();
+        });
+
+
+        // Reload from db and check
+        Fluent::with_locale('en_NZ', function() use ($frRecord, $test) {
+            $nzRecord = FluentTest_NullableObject::get()->byID($frRecord->ID);
+            $test->assertEquals('NZ Value', $nzRecord->Localised);
+            $test->assertEquals('NZ nullable value', $nzRecord->LocalisedNullable);
+            $test->assertEquals('New global value', $nzRecord->Unlocalised);
+
+            // Test nullable value can be re-written back to null
+            $nzRecord->LocalisedNullable = null;
+            $nzRecord->write();
+        });
+
+        // Reload from db and check
+        Fluent::with_locale('en_NZ', function() use ($frRecord, $test) {
+            $nzRecord = FluentTest_NullableObject::get()->byID($frRecord->ID);
+            $test->assertEmpty($nzRecord->LocalisedNullable);
+        });
 
         // Put default locale back
         Fluent::set_persist_locale('fr_CA');
@@ -944,6 +1065,32 @@ class FluentTest extends SapphireTest
         $this->assertEquals('es description', $row['Description_fr_CA']);
         $this->assertEquals('nz description', $row['Description_en_NZ']);
     }
+
+    /**
+     * Test Fluent::isFieldModified and ensure that:
+     *
+     * - if the field's value at a given locale is the same as the default locale's value, it is NOT modified
+     * - if it's different at a given locale than default, it IS modified
+     * - if it's empty at a given locale it should inherit from default so it is NOT modified
+     */
+    public function testIsFieldModified()
+    {
+        $object = $this->objFromFixture('FluentTest_TranslatedObject', 'translated1');
+
+        $fields = $object->getCMSFields();
+
+        // Default locale
+        $this->assertFalse(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title'), 'fr_CA'));
+
+        // Default locale, getting the default locale instead of passing it in
+        $this->assertFalse(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title')));
+
+        // Inherited from default locale
+        $this->assertFalse(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title'), 'en_US'));
+
+        // Different from default locale
+        $this->assertTrue(Fluent::isFieldModified($object, $fields->fieldByName('Root.Main.Title'), 'en_NZ'));
+    }
 }
 
 /**
@@ -1018,4 +1165,30 @@ class FluentTest_FrontendController extends Controller
     {
         return true;
     }
+}
+
+/**
+ * @property string $Localised
+ * @property string $LocalisedNullable
+ * @property string $Unlocalised
+ */
+class FluentTest_NullableObject extends DataObject implements TestOnly {
+    private static $extensions = array(
+        'FluentExtension'
+    );
+
+    private static $db = array(
+        'Localised' => 'Varchar(255)',
+        'LocalisedNullable' => 'Text',
+        'Unlocalised' => 'Text'
+    );
+
+    private static $translate = array(
+        'Localised',
+        'LocalisedNullable'
+    );
+
+    private static $nullable_fields = array(
+        'LocalisedNullable'
+    );
 }

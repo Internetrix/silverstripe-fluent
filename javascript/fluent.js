@@ -106,5 +106,84 @@
 				this._super();
 			}
 		});
+
+		/**
+		 * Translated fields - visual indicator
+		 */
+		$('div.LocalisedField *').entwine({
+			/**
+			 * Switch the class and title/tooltip on translated fields
+			 */
+			toggleModified: function(sameAsDefault, selector) {
+				selector = selector || this;
+
+				var label = selector.closest('.field').find('.fluent-locale-label');
+				label.toggleClass('fluent-modified-value');
+
+				if (label.hasClass('fluent-modified-value')) {
+					label.attr('title', 'Modified from default locale value - click to reset');
+				} else {
+					label.attr('title', 'Using default locale value');
+				}
+			}
+		});
+
+		$('div.LocalisedField .LocalisedField').entwine({
+			/**
+			 * Check for changes against the default value
+			 */
+			onchange: function() {
+				if (this.is('input')) {
+					var newValue = this.val();
+				} else if (this.is('textarea')) {
+					var newValue = this.text();
+				}
+
+				var defaultValue = this.data('default-locale-value');
+
+				if (!defaultValue) {
+					// We'll turn this off on the default locale
+					return;
+				}
+
+				this.toggleModified(newValue === defaultValue);
+			}			
+		});
+
+		/**
+		 * If the user clicks on the locale label in its modified state, reset to the default field value
+		 */
+		$('.fluent-locale-label.fluent-modified-value').entwine({
+			onclick: function() {
+				var input = this.closest('.LocalisedField').find('.LocalisedField');
+
+				var defaultValue = input.data('default-locale-value');
+				if (!defaultValue) {
+					return;
+				}
+
+				if (input.is('input')) {
+					input.val(defaultValue);
+				} else if (input.is('textarea')) {
+					input.text(defaultValue);
+					// If it's a WYSIWYG editor, trigger it to update
+					if ('true' === input.attr('tinymce')) {
+						tinyMCE.get(input.attr('id')).setContent(defaultValue);
+					}
+				}
+				input.change();
+			}
+		});
+
+		/**
+		 * Maintain UI state of the CMS locale switcher when using standard browser navigation buttons.
+		 */
+		$('.cms-edit-form').entwine({
+			redraw: function() {
+				var localeMenuLocale = $.cookie('FluentLocale_CMS')
+				$('.cms-fluent-selector .text').text(fluentLocales[localeMenuLocale]);
+				this._super();
+			}
+		});
 	});
 })(jQuery);

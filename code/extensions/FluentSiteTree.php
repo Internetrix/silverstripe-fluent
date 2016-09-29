@@ -34,9 +34,9 @@ class FluentSiteTree extends FluentExtension
 
     public function updateRelativeLink(&$base, &$action)
     {
-
-        // Don't inject locale to subpages
-        if ($this->owner->ParentID && SiteTree::config()->nested_urls) {
+		if (($this->owner->ParentID && SiteTree::config()->nested_urls) &&
+				!(class_exists('Site') && in_array($this->owner->ParentID, Site::get()->getIDList())) 
+			) {// Don't inject locale to subpages
             return;
         }
 

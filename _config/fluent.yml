@@ -63,7 +63,7 @@ Fluent:
   #      - en_NZ
   # Turn this on to enable admin filtering
   filter_admin: false
-  handling_controller: 'ModelAsController'
+  handling_controller: 'ModelAsController' #to solve conflicts with modules that competing the default request controller, the the name of the competing controller here
 ---
 Name: fluenti18nconfig
 ---

@@ -14,12 +14,12 @@ class Fluent extends Object implements TemplateGlobalProvider
     public static function regenerate_routes()
     {
         $routes = array();
-
+        $controller = Fluent::config()->handling_controller ? Fluent::config()->handling_controller : 'ModelAsController';
         // Explicit routes
         foreach (self::locales() as $locale) {
             $url = self::alias($locale);
             $routes[$url.'/$URLSegment!//$Action/$ID/$OtherID'] = array(
-                'Controller' => 'ModelAsController',
+                'Controller' => $controller,
                 self::config()->query_param => $locale
             );
             $routes[$url] = array(

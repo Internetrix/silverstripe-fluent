@@ -103,7 +103,9 @@ class FluentRootURLController extends RootURLController
         $request->setUrl(self::fluent_homepage_link($localeURL));
         $request->match($localeURL . '/$URLSegment//$Action', true);
 
-        $controller = new ModelAsController();
+        $controller = Fluent::config()->handling_controller ? Fluent::config()->handling_controller : 'ModelAsController';
+        
+        $controller = new $controller();
         $result = $controller->handleRequest($request, $model);
 
         $this->popCurrent();

@@ -7,7 +7,7 @@
  * @package fluent
  * @author Damian Mooyman <damian.mooyman@gmail.com>
  */
-class FluentSiteTree extends FluentExtension
+class FluentSiteTree extends ExtraTable_FluentExtension
 {
     public function MetaTags(&$tags)
     {

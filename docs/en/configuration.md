@@ -1,120 +1,117 @@
 # Configuration
 
-Installation runs more smoothly if you configure your site for localisation before
-installing the module, as it will rebuild the database based on configuration.
-Good to read this bit first!
-
-Please check [fluent.yml](../../_config/fluent.yml) for the default configuration settings.
+Most configuration is done via the CMS locales section.
 
 Please make sure to REMOVE any `i18n::set_locale` calls from your `_config.php` file, as it
 will interfere with locale bootstrapping in certain situations (such as `Security` controller actions).
 
-## Testing configuration
-
-Once you've finished configuring your site, you can run the handy validation task to check if
-there are any errors in your config. Examples of errors could include:
- * Invalid default locales
- * Duplicate locales in multiple domains
- * Locales missing from domains
-
-To run this task you can run this on the CLI.
-
-```
-./framework/sake dev/tasks/FluentValidateTask 'flush=all'
-```
-
-Or go to `http://www.mysite.com/dev/tasks/FluentValidateTask?isDev=1` in your browser.
-
 ## Locale configuration
 
-Firstly, you'll need to configure the locales that should be included, as well as
-the default locale.
+You can create locales via the `/admin/locales` CMS section. 
 
-By default the list is blank. You should add the following to your `mysite/_config/fluent.yaml`.
+Each locale has these fields in the CMS editor:
+ - `Locale`: Dropdown which lets you select a locale code from the global locale source
+ - `Title`: Name to use for this locale in the locale switcher
+ - `URL Segment`: Defaults to the locale (e.g. `en_NZ`) but can be customised. Must be unique.
+ 
+Check the box titled `This is the global default locale` to set this locale as the global default. 
+ 
+**Note:** If using domains, you can additionally assign per-domain defaults as well.
 
-It's advisable to set the default i18n locale to match your site locale.
+ - `Domain`: Dropdown to assign this locale to a domain.
+ 
+Navigate to the `Fallbacks` tab, which allows you to specify one or more fallback locales for this locale.
 
-Below demonstrates a typical north American website.
+Once you add at least two locales to your site, you can begin localising your content. 
 
-```yaml
----
-Name: myfluentconfig
-After: '#fluentconfig'
----
-Fluent:
-  default_locale: en_US
-  locales:
-    - en_US
-    - es_US
-    - en_CA
-    - fr_CA
----
-Name: myfluenti18nconfig
-After: '#fluenti18nconfig'
----
-i18n:
-  default_locale: en_US
-```
+_**Important:** Pages in locales that fall back must be added and published in each locale you want them to be visible 
+in - including the default locale. This essentially requires the re-publication of content in each locale, once content 
+is localised. Be aware that the site will not appear as it did before the creation of Fluent locales until this step is 
+completed._
 
-Additionally, if you prefer to customise the urls (such as having 'english' instead of 'en_US' as a prefix) you can use
-the `Fluent.aliases` configuration to specify URL aliases for any locale.
-
-E.g.
-
-```yaml
----
-Name: myfluentconfig
-After: '#fluentconfig'
----
-Fluent:
-  default_locale: en_US
-  locales:
-    - en_US
-    - es_US
-    - en_CA
-    - fr_CA
-  aliases:
-    en_US: english
-    es_US: spanish
-```
-
-The home pages for the above locales will be `/english/`, `/spanish/`, `/en_CA/`, and `/fr_CA/`
+If desired, Fluent can be enabled on a field by field basis. Note that non-translated fields on any page will be 
+displayed in the default locale.
 
 ## Default locale options
 
-If you prefer to keep the prefix off from all links in the default locale, you can set the
-`Fluent.disable_default_prefix` option. When this is enabled, the prefix will only be
-prepended to the beginning of links to non-default locales.
+### Disable default locale url segment prefix
 
+`TractorCow\Fluent\Extension\FluentDirectorExtension.disable_default_prefix` (default: `false`)
+
+This option will allow users to exclude the default locale urlsegment from pages in the default locale.
+
+*Default behaviour (disabled)*
+
+If this is left at the default, false, then the default locale will always be prefixed with the
+urlsegment of that locale.
+
+In addition to this, another hreflang will be generated for the root url `/` with the hreflange="x-default".
+
+E.g.
+
+```html
+<link rel="alternate" hreflang="x-default" href="https://mysite.com/" />
+<link rel="alternate" hreflang="en-nz" href="https://mysite.com/nz/" />
+<link rel="alternate" hreflang="en-au" href="https://mysite.com/au/" />
+```
+
+It is recommended to leave this setting at the default false in order to ensure the correct
+locale is set for every page, but in some cases (especially when upgrading websites) it
+may be better to keep existing urls for the default locale intact.
+
+Note: x-default is only added for the home pages. Other pages won't have x-default.
+
+*Enabled behaviour*
+
+If you prefer to keep the prefix off from all links in the default locale, you can set this option via
+YML config. When this is enabled, the prefix will only be used (prepended) in links to non-default locales.
 
 E.g.
 
 ```yaml
 ---
 Name: myfluentconfig
-After: '#fluentconfig'
 ---
-Fluent:
+TractorCow\Fluent\Extension\FluentDirectorExtension:
   disable_default_prefix: true
 ```
 
-If this is left at the default, false, then the prefix will only be omitted for the
-home page for the default locale.
+E.g.
 
-It is recommended to leave this on in order to ensure the correct locale is set for every page,
-but in some cases (especially when upgrading websites) it may be better to keep existing urls
-for the default locale intact.
+```html
+<link rel="alternate" hreflang="en-nz" href="https://mysite.com/" />
+<link rel="alternate" hreflang="en-au" href="https://mysite.com/au/" />
+```
+
+Note: If you still wish to use x-default for the global locale, you can assign x-default
+to the global locale via the CMS. However, this affects all pages, not just the home page.
+
 
 ## Field localisation configuration
 
-Great, now we've setup our languages. Our next job is to decide which DataObjects, and which
+Great, now we've set up our languages. Our next job is to decide which DataObjects, and which
 fields of those DataObjects, should be localised.
 
 By default Fluent will attempt to analyse the field type and name of each `DBField` specified in your `DataObject`.
-Rules specified by `Fluent.field_include`, `Fluent.field_exclude`, `Fluent.data_include`, and `Fluent.data_exclude`
-can be customised to tweak this automatic detection behaviour. This filter is used to specify filters based on field
-type. `data_` filters filter fields by `DBField` type, where `field_` filters are by name. Regular expressions may
-be specified by surrounding your filter with `/filter/`.
+Rules specified by the below configurations can be used to determine if a field should be included
+or excluded, either by name, or by type (in order of priority):
+
+ - `TractorCow\Fluent\Extension\FluentExtension.field_exclude` Exclude by name
+ - `TractorCow\Fluent\Extension\FluentExtension.field_include` Include by name
+ - `TractorCow\Fluent\Extension\FluentExtension.data_exclude` Exclude by type
+ - `TractorCow\Fluent\Extension\FluentExtension.data_include` Include by type
+
+E.g.
+
+```yaml
+---
+Name: fluentfieldconfig
+---
+TractorCow\Fluent\Extension\FluentExtension:
+  data_exclude:
+    - Varchar(100)
+    - DBHTMLText
+```
 
 Fields can also be filtered directly by name by using the `translate` config option, set to the fields you want
 localised. Note that this must be on the same class as the database field is specified (not subclasses).
@@ -132,18 +129,20 @@ Page:
 or via PHP
 
 ```php
+use SilverStripe\CMS\Model\SiteTree;
+
 class Page extends SiteTree
 {
-    private static $db = array(
+    private static $db = [
         'Heading'     => 'Varchar(255)',
         'Description' => 'Text',
-        'MetaNotes'   => 'Text'
-    );
+        'MetaNotes'   => 'Text',
+    ];
 
-    private static $translate = array(
+    private static $translate = [
         'Heading',
         'Description'
-    );
+    ];
 }
 ```
 
@@ -158,8 +157,8 @@ BlogHolder:
     - 'OwnerID'
 ```
 
-Note: If you wish to translate `has_many` or `many_many` then those objects will need
-to be filtered via another method. See [Locale based filter configuration](#locale-based-filter-configuration)
+**Note:** If you wish to translate `has_many` or `many_many` then those objects will need
+to be filtered via another method. See [Locale based filter configuration](#locale-based-filter-configuration).
 
 If you want to localise a `DataObject` that doesn't extend `SiteTree` then you'll need
 to add the appropriate extension:
@@ -170,8 +169,21 @@ Name: myextensions
 ---
 MyDataObject:
   extensions:
-    - 'FluentExtension'
+    - 'TractorCow\Fluent\Extension\FluentExtension'
 ```
+
+If `MyDataObject` is versioned, use `FluentVersionedExtension` instead and apply this config
+_after_ the `Versioned` extension using an `after` block in your config title block.
+
+```yaml
+---
+Name: myextensions
+after: '#versionedfiles'
+---
+MyDataObject:
+  extensions:
+    - 'TractorCow\Fluent\Extension\FluentVersionedExtension'
+``` 
 
 Set the translate option to 'none' to disable all translation on that `DataObject`.
 
@@ -182,86 +194,67 @@ class FormPage extends Page
 }
 ```
 
-## Using custom controllers
+**Note:** Editing any locale affects the `SiteTree(_live)` table. In contrast to SilverStripe 3, the SiteTree table is 
+only used for non-localised fields.
 
-If you are using custom controllers (such as for rendering RSS, AJAX data, etc) you
-should probably also add the `FluentContentController` extension in order to ensure
-the locale is set correctly for generated content.
+## Frontend publish required
+
+By default, DataObjects must be Localised in order for them to be viewed on the frontend. In the case of a `SiteTree`
+record, this means that there must be a `SiteTree_Localised` row for this record and Locale to view the page in
+`stage=Stage`, and there must be a `SiteTree_Localised_Live` row for this record and Locale to view the page in
+`stage=Live`.
+
+We can change this behaviour by updating the `frontend_publish_required` configuration.
+
+Globally:
+```yaml
+TractorCow\Fluent\Extension\FluentExtension:
+  frontend_publish_required: false
+```
+
+For a specific DataObject:
+```yaml
+MySite\Model\MyModel:
+  frontend_publish_required: false
+```
+
+**Note:** If you are applying this via an `Extension`, be sure to apply it after the `FluentExtension`.
+
+The result is that a DataObject that has *not* been Localised, will display on the frontend with content populated by
+it's Fallbacks (the same beheviour as what you see when viewing DataObjects from within the CMS).
+
+## SilverStripe Fluent and search
+
+### SilverStripe Core search
+
+To use SilverStripe Core search with Fluent, add the `FluentSearchForm` to your configuration.
 
 ```yaml
 ---
-Name: mycontrollerconfig
+Name: myextensions
 ---
-MyAjaxController:
-  extensions:
-    - 'FluentContentController'
-```
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\CMS\Search\SearchForm:
+    class: TractorCow\Fluent\Search\FluentSearchForm
+``` 
 
-If you are using your custom controller in the CMS then you should implement
-an `isFrontend` method in your class in order to tell Fluent to treat it as an
-admin's view. This means:
-
- * It will respect the value selected in the CMS locale dropdown.
- * It won't interfere with the view of the website in the frontend.
- * All locale-filtered objects will be available unfiltered to this controller.
-
-```php
-class MyAdminController extends Controller {
-	public function isFrontend() {
-		return false;
-	}
-}
-```
-
-## Nullable fields
-
-Due to the way that localisation works, any empty field will fall back to the value of that field in
-the default locale. By default fields cannot be easily forced to an empty value.
-
-However you may specify a `nullable_fields` config on any object to disable default value fallback
-for any (or all) field(s), meaning that empty fields will stay empty.
-
-
-```php
-class Page extends SiteTree {
-    private static $db = array(
-        'IntroText' => 'Varchar'
-    );
-
-    private static $nullable_fields = array(
-        'IntroText'
-    );
-}
-```
-
-You can also set this to the string `*` to apply this behaviour to all fields on that record.
-
-
-```php
-class MyObject extends DataObject {
-    private static $nullable_fields = '*';
-}
-```
-
+**Note:** If you're using the SilverStripe CMS `$SearchForm` to display the default SilverStripe template on the front-end, this will update form and input id and class selectors from 'SearchForm' to 'FluentSearchForm'. E.g. form element `id='SearchForm_SearchForm'` will become `id='FluentSearchForm_SearchForm'`.
 
 ## Locale based filter configuration
 
 In addition to localising fields within a DataObject, a filter can also be applied
-with the `FluentFilteredExtension` extension to conditionally show or hide DataObjects
-within specific locales.
-
-For example, this could be applied to a `Product` with limited availability in other countries.
+with the `TractorCow\Fluent\Extension\FluentFilteredExtension` extension to conditionally
+show or hide DataObjects within specific locales. This will create a many_many relationship
+between your object and the locales table.
 
 This feature is also necessary in cases where has_many or many_many relationships will need
-to be customised for each locale. Rather than creating a `ThisClass_OtherClass_{en_NZ}` table
-for each locale, the `DataObject` on each (or one) end will have this filter applied
-to it. Internally this will create a `LocaleFilter_{en_NZ}` column on the specified
-`DataObject` table for each locale.
+to be customised for each locale. For example, this could be applied to a `Product` with
+limited availability in other countries.
 
-Note: It's not necessary to actually localise this object in order for it to be
+**Note:** It's not necessary to actually localise this object in order for it to be
 filterable; `FluentFilteredExtension` and `FluentExtension` each work independently.
 
-Warning: This must be added to the base class, such as `SiteTree` in order for it to filter
+**Warning:** This must be added to the base class, such as `SiteTree` in order for it to filter
 for pages, or for queries of that base type.
 
 ```yaml
@@ -270,7 +263,7 @@ Name: myproductconfiguration
 ---
 Product:
   extensions:
-    - 'FluentFilteredExtension'
+    - 'TractorCow\Fluent\Extension\FluentFilteredExtension'
 ```
 
 Make sure that if (and only if) you are filtering a DataObject that doesn't call the default field scaffolder (such
@@ -278,7 +271,8 @@ as by calling `parent::getCMSFields()`), make sure that your code calls `extend(
 as demonstrated below.
 
 ```php
-function getCMSFields() {
+public function getCMSFields()
+{
 	$fields = new FieldList(
 		new TextField('Title', 'Title', null, 255)
 	);
@@ -287,82 +281,78 @@ function getCMSFields() {
 }
 ```
 
-Now when editing this item in the CMS there will be an additional set of checkboxes
-labelled "Locale filter".
+Now, when editing this item in the CMS, there will be a gridfield where you can assign
+visible locales for this object.
 
-![Locale Filter](images/locale-filter.jpg "Locale filter")
+![Locale Filter](images/locale-filter.png "Locale filter")
 
 Note: Although these objects will be filtered in the front end, this filter is disabled
 in the CMS in order to allow access by site administrators in all locales.
 
-## Customise Menu by Locale
+## Single locale (isolated) filter
 
-Similarly to how `FluentFilteredExtension` works, a `SiteTree` can have its appearance in the navigation controlled
-on a locale-by-locale basis by adding the `FluentMenuExtension` extension. Adding this will replace the
-ShowInMenu field under the Settings tab with a locale selector. This must be added to the `SiteTree`
-class, not `Page` or any other subclass.
+Sometimes it may be necessary to filter a record to the locale it was created in. A simple filter extension
+`FluentIsolatedExtension` can be added to any object. This behaviour differs from `FluentFilteredExtension` in these ways:
 
-```yaml
----
-Name: myproductconfiguration
----
-SiteTree:
-  extensions:
-    - 'FluentMenuExtension'
-```
+ - Filtering is only applied to a single locale
+ - The locale cannot be changed
+ - The filter is applied to the CMS view by default (you need to change locale to see it)
+ - There is no configuration / UX considerations. Deleting the record works like traditional silverstripe
+   objects, as it's not complicated by the locale assignment logic of the other extensions. There are also
+   no CMS fields related to the filtering.
+ - You cannot use this extension on an object with `FluentExtension` or `FluentFilteredExtension`.
+   They are mutually exclusive and will throw an exception if you try to use them together. 
 
-## Fulltext Search
+## Routing and Locale Detection
 
-Since full text search queries are very distinct, DB specific filters must be assigned to handle these queries.
+The `DetectLocaleMiddleware` will detect if a locale has been requested (or is default) and is not the current
+locale, and will redirect the user to that locale if needed.
 
-By default there is only a `FluentMySQLSearch` to handle MySQL search transformations, but adapters for other DBs can
-be specified by adding a class to the `Fluent.search_adapters` config.
+Will cascade through different checks in order:
+1. Routing path (e.g. `/de/ueber-uns`)
+2. Request variable (e.g. `ueber-uns?FluentLocale=de`)
+3. Domain (e.g. `http://example.de/ueber-uns`)
+4. Session (if a session is already started)
+5. Cookie (if `DetectLocaleMiddleware.persist_cookie` is configured)
+6. Request headers (if `FluentDirectorExtension.detect_locale` is configured)
 
-Adapters can be disabled by setting the appropriate option to null.
-
-```yaml
----
-Name: mysearchadapter
----
-Fluent:
-  search_adapters:
-    MySQLDatabase: ''
-    PostgreSQLDatabase: MyPostgreAdapter
-```
-
-Search localisation is quite fragile, and is likely to break with future framework updates!
-
-## Locale detection
-
-When a visitor lands on the home page for the first time, Fluent can attempt to detect that user's locale based
-on the `Accept-Language` http headers sent.
-
-This functionality can interfere with certain applications, such as Facebook opengraph tools, so it
-is turned off by default. To turn it on set the below setting:
+Additionally, detected locales will be set in cookies. This behaviour can be configured through
+`DetectLocaleMiddleware.persist_cookie`. To solely rely on sessions (if session is started) and
+stateless request data (routing path, request variable or domain), configure as follows:
 
 ```yaml
-Fluent:
-  detect_locale: true
+TractorCow\Fluent\Middleware\DetectLocaleMiddleware:
+  persist_cookie: false
 ```
 
-## Saved locale
+Note that locales will only be persisted to the session if the session is already started. If
+you want to guarantee session persistence, you will need to ensure you call `->start()`
+on the session in the active HTTPRequest via a \_config.php file, or add a higher priority
+middleware that always starts the session ensuring it runs before `DetectLocaleMiddleware`.
+Be aware that prematurely starting sessions may complicate HTTP caching in your website.
 
-When a visitor has viewed a page on the website before, and returns in subsequent sessions, Fluent can attempt
-to redirect requests for the default home page to the home page of that recently viewed locale. This behaviour
-is turned off by default, but it can be turned on by setting the `remember_locale` option.
+## Encoding
+
+Setting proper encoding is important especially when your application needs to deal with non-latin characters.
+Following configuration is recommended:
 
 ```yaml
-Fluent:
-  remember_locale: true
+SilverStripe\ORM\Connect\MySQLDatabase:
+  connection_charset: utf8mb4
+  connection_collation: utf8mb4_unicode_ci
+  charset: utf8mb4
+  collation: utf8mb4_unicode_ci
 ```
 
-If you wish to completely turn off the locale persisting in the front end (for example, in case your site is stateless
-and should not write session or cookies) you can disable the persist key as below.
+Note that using this configuration may cause some of your DB indexes to break as the indexes may increase in size.
+General workaround is to change any `Varchar(255)` fields which are associated with indexes to `Varchar(191)`.
+This can be done on configuration level and it can cover even fields which are not part of your code base.
 
-```yaml
-Fluent:
-  persist_id: ''
-```
+### Known issues with non-latin characters
 
-**Note:** It's recommended not to remove `persist_id_cms`, as certain CMS functionality may not work properly
-or may detect the wrong locale.
+Core SilverStripe modules provide text processing functionality but part of it may not work properly with non-latin characters.
+Knows issues are:
+
+* incorrect detection of end of word
+* incorrect detection of end of line
+* use of functions which are not multi-byte safe

@@ -62,30 +62,6 @@ class MyObject extends DataObject
 
 ```
 
-### CMS Filtering
-
-By default, filtering of objects with `FluentFilteredExtension` is disabled within the CMS.
-This is because, should an object ever be filtered out of all locales, the object must then be
-findable in order to re-enabled it.
-
-In any case where it may be necessary to apply filtering rules within a CMS (For instance,
-where a many_many relation may be managed by a checkboxset, and hidden objects should be
-disabled) then this filter may be enforced within the CMS on a case by case basis.
-
-The following will construct such a list, ensuring that only objects valid in the current
-locale are given.
-
-```php
-public function getCMSFields()
-{
-	$fields = parent::getCMSFields();
-	// Causes filtering to be enabled within the admin
-	$banners = $this->Banners()->setDataQueryParam(FluentFilteredExtension::FILTER_ADMIN, true);
-	$fields->addFieldsToTab('Root.Banners', new CheckboxSetField('Banners', 'Banners', $banners));
-	return $fields;
-}
-```
-
 ### Extensions
 
 As mentioned in the CMS Fields heading, it is necessary to ensure that the `updateCMSFields` extension method is called
@@ -98,12 +74,32 @@ You can circumvent this issue by extending `FluentExtension` from your custom ex
 using inheritance rather than two different extensions:
 
 ```php
+use TractorCow\Fluent\Extension\FluentExtension;
+
 class PlayerExtension extends FluentExtension
 {
-    public function updateCMSFields(FieltList $fields)
+    public function updateCMSFields(FieldList $fields)
     {
         $fields->removeByName('SomeIrrelevantField');
         parent::updateCMSFields($fields);
     }
 }
+```
+
+#### Versioned extension
+
+**Important:** If you're applying the `FluentVersionedExtension` to a versioned DataObject, you will need to ensure that
+it is applied _after_ the `Versioned` extension. You can control this with an `after: '#versionedfiles'` rule in your
+YAML title block. An example configuration block might look like this:
+
+```yaml
+---
+Name: mysitefluent
+After: '#versionedfiles'
+---
+SilverStripe\Assets\File:
+  extensions:
+    - TractorCow\Fluent\Extension\FluentVersionedExtension
+  translate:
+    - Title
 ```

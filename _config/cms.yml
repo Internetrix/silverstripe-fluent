@@ -1,0 +1,27 @@
+---
+Name: fluentcms
+---
+SilverStripe\Admin\LeftAndMain:
+  extensions:
+    FluentLeftAndMainExtension: TractorCow\Fluent\Extension\FluentLeftAndMainExtension
+
+SilverStripe\Versioned\ChangeSetItem:
+  extensions:
+    FluentChangesExtension: TractorCow\Fluent\Extension\FluentChangesExtension
+
+SilverStripe\Versioned\VersionedGridFieldItemRequest:
+  extensions:
+    FluentGridFieldExtension: TractorCow\Fluent\Extension\FluentGridFieldExtension
+
+SilverStripe\Versioned\GraphQL\Operations\ReadVersions:
+  extensions:
+    FluentReadVersionsExtension: TractorCow\Fluent\Extension\FluentReadVersionsExtension
+
+---
+Name: fluentcms-pages
+onlyif:
+  moduleexists: silverstripe/cms
+---
+SilverStripe\CMS\Model\SiteTree:
+  extensions:
+    FluentSiteTreeExtension: TractorCow\Fluent\Extension\FluentSiteTreeExtension

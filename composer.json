@@ -1,29 +1,69 @@
 {
-	"name": "tractorcow/silverstripe-fluent",
-	"description": "Simple localisation for Silverstripe",
-	"type": "silverstripe-module",
-	"keywords": [
-        "silverstripe", "localisation", "localization", "translation", "language", "locale", "multilingual",
-        "translatable", "i18n", "internationalisation", "internationalization"
+    "name": "tractorcow/silverstripe-fluent",
+    "description": "Simple localisation for Silverstripe",
+    "type": "silverstripe-vendormodule",
+    "keywords": [
+        "silverstripe",
+        "localisation",
+        "localization",
+        "translation",
+        "language",
+        "locale",
+        "multilingual",
+        "translatable",
+        "i18n",
+        "internationalisation",
+        "internationalization"
     ],
-	"license": "BSD-3-Clause",
-	"authors": [
-		{
-			"name": "Damian Mooyman",
-			"email": "damian.mooyman@gmail.com"
-		}
-	],
-	"support": {
-		"issues": "http://github.com/tractorcow/silverstripe-fluent/issues"
-	},
-	"require": {
-		"silverstripe/framework": "~3.2",
-		"silverstripe/cms": "~3.2"
-	},
-	"extra": {
-		"branch-alias": {
-			"dev-master": "3.5.x-dev"
-		},
-		"installer-name": "fluent"
-	}
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Damian Mooyman",
+            "email": "damian.mooyman@gmail.com"
+        },
+        {
+            "name": "Robbie Averill",
+            "email": "robbie@silverstripe.com"
+        }
+    ],
+    "support": {
+        "issues": "http://github.com/tractorcow-farm/silverstripe-fluent/issues"
+    },
+    "require": {
+        "php": "^7.1",
+        "silverstripe/vendor-plugin": "^1",
+        "silverstripe/framework": "^4",
+        "silverstripe/admin": "^1",
+        "silverstripe/versioned": "^1",
+        "symbiote/silverstripe-gridfieldextensions": "^3.1",
+        "ext-json": "*"
+    },
+    "suggest": {
+        "silverstripe/cms": "Localise pages"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7",
+        "squizlabs/php_codesniffer": "^3"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "6.x-dev",
+            "5.x-dev": "5.1.x-dev"
+        },
+        "expose": [
+            "client/dist"
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "TractorCow\\Fluent\\": "src/",
+            "TractorCow\\Fluent\\Tests\\": "tests/php/"
+        }
+    },
+    "scripts": {
+        "lint": "phpcs src/ tests/php/",
+        "lint-clean": "phpcbf src/ tests/php/"
+    },
+    "prefer-stable": true,
+    "minimum-stability": "dev"
 }

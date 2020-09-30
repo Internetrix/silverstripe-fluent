@@ -1,8 +1,9 @@
 # Fluent
 
-[![Build Status](https://travis-ci.org/tractorcow/silverstripe-fluent.svg?branch=master)](https://travis-ci.org/tractorcow/silverstripe-fluent)
-
-[![Codewake](https://www.codewake.com/badges/ask_question.svg)](https://www.codewake.com/p/silverstripe-fluent)
+[![Build Status](https://travis-ci.org/tractorcow-farm/silverstripe-fluent.svg?branch=master)](https://travis-ci.org/tractorcow-farm/silverstripe-fluent)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/tractorcow-farm/silverstripe-fluent/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/tractorcow-farm/silverstripe-fluent/?branch=master)
+[![codecov](https://codecov.io/gh/tractorcow-farm/silverstripe-fluent/branch/master/graph/badge.svg)](https://codecov.io/gh/tractorcow-farm/silverstripe-fluent)
+[![SilverStripe supported module](https://img.shields.io/badge/silverstripe-supported-0071C4.svg)](https://www.silverstripe.org/software/addons/silverstripe-commercially-supported-module-list/)
 
 ## Simple Silverstripe Localisation
 
@@ -14,7 +15,7 @@ Locales are distinguished by a url prefix, that of the selected locale, at the s
 of all page links. E.g. `http://damian.geek.nz/en_NZ/about-me` would be the NZ English
 version of a page. This could be localised into Maori at `http://damian.geek.nz/mi_NZ/about-me`
 
-Fluent also integrates nicely with Google Sitemaps module, linking localisations for each page as per 
+Fluent also integrates nicely with Google Sitemaps module, linking localisations for each page as per
 [Google's internationalisation guidelines](https://support.google.com/webmasters/answer/182192?hl=en&ref_topic=2370587)
 
 Fluent also supports the use of multiple domains to assist in locale filtering
@@ -22,45 +23,53 @@ Fluent also supports the use of multiple domains to assist in locale filtering
 
 Back end control is provided by a simple CMS filter.
 
-| **Locale Menu** | **Locale Menu (expanded)** |
-| --------------- | -------------------------- |
-| ![Locale Menu](docs/en/images/menu.jpg "Locale menu") | ![Locale Menu](docs/en/images/menu-expanded.jpg "Locale menu (expanded)") |
+![Locale Menu](docs/en/images/menu.png "Locale menu")
 
-_Please read the [Configuration](docs/en/configuration.md) section before trying to install!_
-
-Also, please [report any issues](https://github.com/tractorcow/silverstripe-fluent/issues)
+Also, please [report any issues](https://github.com/tractorcow-farm/silverstripe-fluent/issues)
 you may encounter, as it helps us all out!
+
+## Contributing
+
+If you would like to contribute to Fluent, either via pull requests,
+localisations, or being a part of the contributing team, please see
+[the contributing guidelines](CONTRIBUTING.md)
 
 ## Credits and Authors
 
- * Damian Mooyman - <https://github.com/tractorcow/silverstripe-fluent>
+ * Damian Mooyman - <https://github.com/tractorcow-farm/silverstripe-fluent>
+ * Robbie Averill - <https://github.com/robbieaverill> Migrating to SilverStripe 4.0
  * Attribution to Michael (dAKirby309) for his metro translate icon - <http://dakirby309.deviantart.com/>
 
 ## Requirements
 
- * SilverStripe 3.1.1 or above (3.1 dev branch)
- * PHP 5.3
-
-You can use Silverstripe 3.1 RC1 (3.1.0) if you use the 3.1.0 branch of fluent, but this does not support
-translatable urls.
+ * SilverStripe 4.0.0 or above
+ * PHP 7.1 or above
 
 ## Documentation
 
  * [Configuration](docs/en/configuration.md)
+ * [Locale Detection](docs/en/locale-detection.md)
  * [Installation](docs/en/installation.md)
  * [Working with DataObjects](docs/en/dataobjects.md)
  * [Deployment under multiple domains](docs/en/domain-configuration.md)
  * [Templating for Fluent](docs/en/templating.md)
  * [How Fluent works](docs/en/how-fluent-works.md)
- * [Migration guide for Translatable sites](docs/en/translatable.md)
+ * [Scenarios](docs/en/scenarios.md)
+ * [Localised copy](docs/en/localised-copy.md)
+ * [Migrating from Translatable](docs/en/migrating-from-translatable.md)
  * [Changelogs](CHANGELOG.md)
+
+## Translations
+
+The translations for this project are managed via [Transifex](https://www.transifex.com/silverstripe/silverstripe-fluent)
+and are updated automatically during the release process. To contribute, please head to the link above and get
+translating!
 
 ## License
 
 Revised BSD License
 
-Copyright (c) 2013, Damian Mooyman
-All rights reserved.
+Copyright (c) 2018, Damian Mooyman
 
 All rights reserved.
 

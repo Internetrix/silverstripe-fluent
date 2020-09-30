@@ -1,16 +1,21 @@
 # Installation
 
-Fluent can be easily installed on any already-developed website
-
- * Please ensure that your site is configured before attempting to install Fluent.
-   Read the [configuration documentation here](configuration.md).
-
- * Either extract the module into the `fluent` folder, or install using [composer](https://getcomposer.org)
+ * Fluent can be easily installed on any already-developed website, but must be installed
+with composer.
 
 ```bash
-composer require tractorcow/silverstripe-fluent ^3.5
+composer require tractorcow/silverstripe-fluent ^5
 ```
 
  * Run a `dev/build` to ensure all additional table fields have been generated
- * If migrating from the [Translatable module](https://github.com/silverstripe/silverstripe-translatable) make
-   sure to check the [Translatable migration guide](translatable.md)
+ * Configure your locales in the `/admin/locales` section
+ * Publish pages in each of the locales you want them to be visible in
+
+Fluent will automatically localise SiteTree objects. If you want to localise other DataObjects you will need to
+add the appropriate extension yourself.
+
+Please note that if your DataObject is versioned you will need to use the
+`FluentVersionedExtension`, and it must be applied _after_ the `Versioned` extension. You can achieve this by
+using an `after: '#versionedfiles'` condition in your YAML configuration block title.
+
+For more information please see [configuration](configuration.md).

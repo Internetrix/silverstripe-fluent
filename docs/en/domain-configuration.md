@@ -26,40 +26,16 @@ Although we have three domains, we can still use five locales, and allow each do
 
 ## Configuration
 
-The `fluent.yml` configuration for the above example would look like the above:
+Configuration of these domains is done on the "Domains" section of the `/admin/locales`
+CMS admin.
 
-```yaml
----
-Name: myfluentconfig
-After: '#fluentconfig'
----
-Fluent:
-  default_locale: en_US
-  locales:
-    - en_US
-    - es_US
-    - es_ES
-    - zh_cmn
-    - zh_yue
-  domains:
-    www.example.com:
-      locales:
-        - en_US
-        - es_US
-      default_locale: en_US
-    www.example.com.es:
-      locales:
-        - es_ES
-    www.example.cn:
-      locales:
-        - zh_cmn
-        - zh_yue
-      default_locale: zh_cmn
-```
+Each locale has these fields in the CMS editor:
+ - `Domain Hostname`: Full hostname to match this domain
+ - `Locales`: List of locales assigned to this domain
+ - `Default Locale`: A dropdown which allows one of the above locales to be assigned the default
 
-Note that every locale must be associated with only one domain. Nevertheless every domains will list all locales in
-their [LocaleMenu](templating.md#templating-for-fluent). To ensure a valid configuration you can use test your
-configuration as described [here](configuration.md#testing-configuration).
+Note that every locale can be associated with only one domain. Nevertheless every domains will list all locales in
+their [LocaleMenu](templating.md#templating-for-fluent).
 
 ## Deployment
 
@@ -69,9 +45,9 @@ deployment:
 Either one of:
 
  * Ensure that all domains configured are the only domains that the site can be accessed under, or
- * Add `define('SS_FLUENT_FORCE_DOMAIN', true)` to your `_ss_environment.php` file, or
- * Add `Config::inst()->update('Fluent', 'force_domain', true)` to your config (this will effect your development
-     environment)
+ * Add `SS_FLUENT_FORCE_DOMAIN=true` to your `.env` file, or
+ * Set the `TractorCow\Fluent\Extension\FluentDirectorExtension.force_domain` config to true.
+   (this will affect your development environment).
 
 Outside of these conditions, the domains configuration property will be entirely ignored, meaning you will not normally
 need to alter your SilverStripe configuration between environments.

@@ -1,0 +1,73 @@
+TractorCow\Fluent\Model\Locale:
+  en:
+    Title: EN
+    Locale: en_US
+    URLSegment: en
+  at:
+    Title: AT
+    Locale: de_AT
+    URLSegment: at
+
+
+TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObject:
+  house:
+    Title: 'A House'
+    Title_en_US: 'A House'
+    Title_de_AT: 'Ein Haus'
+    Name: 'Something'
+    Name_en_US: 'Something'
+    Name_de_AT: 'Irgendwas'
+  partiallyTranslated:
+    Title: 'TV'
+    Title_de_AT: 'Fernseher'
+    Name: 'big flatscreen'
+    Name_de_AT: 'Flachbild (groß)'
+  unTranslated:
+    Title: 'TV'
+    Name: 'big flatscreen'
+  fragmented:
+    Title: 'TV'
+    Title_de_AT: 'Fernseher'
+    Name: 'big flatscreen'
+    Name_en_US: 'idiot box'
+
+TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectSubclass:
+  tree:
+    Title: 'A Tree'
+    Title_en_US: 'A Tree'
+    Title_de_AT: 'Ein Baum'
+    Name: 'Marple'
+    Name_en_US: 'Marple'
+    Name_de_AT: 'Ahorn'
+    Category: 'deciduous trees'
+    Category_en_US: 'deciduous trees'
+    Category_de_AT: 'Laubbäume'
+
+TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedDataObjectPartialSubclass:
+  dog:
+    Title: 'A Dog'
+    Title_en_US: 'A Dog'
+    Title_de_AT: 'Ein Hund'
+    Name: 'Sheepdog'
+    Name_en_US: 'Sheepdog'
+    Name_de_AT: 'Schäferhund'
+    Category: 'working dogs'
+    Category_en_US: 'working dogs'
+    Category_de_AT: 'Arbeitshunde'
+    Colour: 'Brown'
+
+TractorCow\Fluent\Tests\Task\FluentMigrationTaskTest\TranslatedPage:
+  table:
+    Title: 'A Table'
+    Title_en_US: 'A Table'
+    Title_de_AT: 'Ein Tisch'
+    TranslatedValue: 'made from wood'
+    TranslatedValue_en_US: 'made from wood'
+    TranslatedValue_de_AT: 'aus Holz'
+  chair:
+    Title: 'A Chair'
+    Title_en_US: 'A Chair'
+    Title_de_AT: 'Ein Stuhl'
+    TranslatedValue: 'plastic'
+    TranslatedValue_en_US: 'plastic'
+    TranslatedValue_de_AT: 'aus Kunststoff'
